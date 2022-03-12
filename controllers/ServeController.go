@@ -16,12 +16,9 @@ import (
 // @Summary Register a new serve
 // @Description Register a new serve
 // @Tags serve
-// @Accept  mpfd
+// @Accept  json
 // @Produce  json
-// @Param judul formData string true "judul to register"
-// @Param text formData string true "text of serve"
-// @Param undangan_id formData integer true "id of undangan"
-// @Param image formData file false "image of serve"
+// @Param name body models.RecipeCategoryCreate true "name of recipe"
 // @Security Bearer
 // @Success 201 {object} models.ResponseResult{result=models.ServeResult201}
 // @Failure 400 {object} models.ResponseError{error=models.ServeError400}
@@ -132,13 +129,9 @@ func ServeCreate(c *gin.Context) {
 // @Summary Edit an serve
 // @Description Edit an serve
 // @Tags serve
-// @Accept  mpfd
+// @Accept  json
 // @Produce  json
-// @Param judul formData string true "judul to edit"
-// @Param text formData string true "text of serve"
-// @Param undangan_id formData integer true "id of undangan"
-// @Param image formData file false "image of serve"
-// @Param serve_id path int true "id serve to edit"
+// @Param stepOrder body models.ServeUpdateStep true "stepOrder"
 // @Security Bearer
 // @Success 200 {object} models.ResponseResult{result=models.ServeResult201}
 // @Failure 400 {object} models.ResponseError{error=models.ServeError400}

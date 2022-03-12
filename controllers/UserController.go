@@ -46,10 +46,10 @@ func UserGetByUserID(c *gin.Context) {
 // @Summary Login user to get auth token
 // @Description Login user to get auth token
 // @Tags user
-// @Accept  mpfd
+// @Accept  json
 // @Produce  json
-// @Param email formData string true "login email"
-// @Param password formData string true "login password"
+// @Param username body models.UserLogin true "username"
+// @Param password body models.UserLogin true "password"
 // @Success 200 {object} models.ResponseResult{result=helpers.TokenResult200}
 // @Failure 400 {object} models.ResponseError{error=models.UserError400}
 // @Failure 406,401,422 {object} models.ResponseError{error=string}

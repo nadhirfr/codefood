@@ -16,12 +16,9 @@ import (
 // @Summary Register a new recipe
 // @Description Register a new recipe
 // @Tags recipe
-// @Accept  mpfd
+// @Accept  json
 // @Produce  json
-// @Param judul formData string true "judul to register"
-// @Param text formData string true "text of recipe"
-// @Param undangan_id formData integer true "id of undangan"
-// @Param image formData file false "image of recipe"
+// @Param name body models.RecipeCreate true "name of recipe"
 // @Security Bearer
 // @Success 201 {object} models.ResponseResult{result=models.RecipeResult201}
 // @Failure 400 {object} models.ResponseError{error=models.RecipeError400}
@@ -320,13 +317,9 @@ func RecipeStepsGetByRecipeID(c *gin.Context) {
 // @Summary Edit an recipe
 // @Description Edit an recipe
 // @Tags recipe
-// @Accept  mpfd
+// @Accept  json
 // @Produce  json
-// @Param judul formData string true "judul to edit"
-// @Param text formData string true "text of recipe"
-// @Param undangan_id formData integer true "id of undangan"
-// @Param image formData file false "image of recipe"
-// @Param recipe_id path int true "id recipe to edit"
+// @Param name body models.RecipeCreate true "name of recipe"
 // @Security Bearer
 // @Success 200 {object} models.ResponseResult{result=models.RecipeResult201}
 // @Failure 400 {object} models.ResponseError{error=models.RecipeError400}

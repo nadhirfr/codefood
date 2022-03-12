@@ -15,13 +15,9 @@ import (
 // @Summary Register a new recipeCategory
 // @Description Register a new recipeCategory
 // @Tags recipeCategory
-// @Accept  mpfd
+// @Accept  json
 // @Produce  json
-// @Param judul formData string true "judul to register"
-// @Param text formData string true "text of recipeCategory"
-// @Param undangan_id formData integer true "id of undangan"
-// @Param image formData file false "image of recipeCategory"
-// @Security Bearer
+// @Param name body models.RecipeCategoryCreate true "name of category"
 // @Success 201 {object} models.ResponseResult{result=models.RecipeCategoryResult201}
 // @Failure 400 {object} models.ResponseError{error=models.RecipeCategoryError400}
 // @Failure 401 {object} models.ResponseError{error=string}
@@ -81,13 +77,10 @@ func RecipeCategoryGetAll(c *gin.Context) {
 // @Summary Edit an recipeCategory
 // @Description Edit an recipeCategory
 // @Tags recipeCategory
-// @Accept  mpfd
+// @Accept  json
 // @Produce  json
-// @Param judul formData string true "judul to edit"
-// @Param text formData string true "text of recipeCategory"
-// @Param undangan_id formData integer true "id of undangan"
-// @Param image formData file false "image of recipeCategory"
-// @Param recipeCategory_id path int true "id recipeCategory to edit"
+// @Param name body models.RecipeCategoryCreate true "name of category"
+// @Param recipeCategory_id path integer true "recipeCategory_id"
 // @Security Bearer
 // @Success 200 {object} models.ResponseResult{result=models.RecipeCategoryResult201}
 // @Failure 400 {object} models.ResponseError{error=models.RecipeCategoryError400}
