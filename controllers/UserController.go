@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -78,8 +79,24 @@ func UserLogin(c *gin.Context) {
 		log.Print(err)
 	}
 
+	var userLoginFaileds []models.UserLoginFailed
+	err = helpers.DB.Model(userLoginFaileds).Where(models.UserLoginFailed{UserID: _user.ID}).Find(&userLoginFaileds).Limit(3).Order("created_at desc").Error
+	if err == nil && len(userLoginFaileds) >= 3 {
+		now := time.Now()
+		oneMinuteAgo := now.Add(time.Duration(-1) * time.Minute)
+		count := len(userLoginFaileds)
+		if oneMinuteAgo.Before(userLoginFaileds[count-1].CreatedAt) {
+			c.JSON(http.StatusForbidden, models.ResponseError{Success: false, Message: "Too many invalid login, please wait for 1 minute"})
+			return
+		}
+	}
+
 	//compare the user from the request, with the one we defined:
 	if user.Username != _user.Username || helpers.CheckPassword(_user.Password, user.Password) != nil {
+		var userLoginFailed models.UserLoginFailed
+		userLoginFailed.UserID = _user.ID
+		helpers.DB.Save(&userLoginFailed)
+
 		c.JSON(http.StatusUnauthorized, models.ResponseError{Success: false, Message: "Invalid username or Password"})
 		return
 	}

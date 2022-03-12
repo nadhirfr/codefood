@@ -8,6 +8,7 @@ import (
 func Migrate() bool {
 	err := helpers.DB.Set("gorm:table_options", "ENGINE=InnoDB").AutoMigrate(
 		&models.User{},
+		&models.UserLoginFailed{},
 		&models.RecipeCategory{},
 		&models.Recipe{},
 		&models.RecipeStep{},

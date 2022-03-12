@@ -10,13 +10,14 @@ import (
 )
 
 type User struct {
-	ID        uint       `gorm:"primaryKey" json:"id" form:"id" swaggertype:"integer"`
-	Username  string     `gorm:"type:varchar(300);unique_index" form:"username" json:"username" binding:"required,max=300" swaggertype:"string" example:"rozam"`
-	Password  string     `gorm:"size:300" form:"password" json:"password,omitempty" binding:"required,min=6,max=300"`
-	Serves    []Serve    `gorm:"foreignKey:UserID"`
-	CreatedAt time.Time  `form:"createdAt" json:"createdAt" swaggertype:"string" example:"2021-04-12T00:39:11.652+07:00"`
-	UpdatedAt time.Time  `form:"updatedAt" json:"updatedAt" swaggertype:"string" example:"2021-04-12T00:39:11.652+07:00"`
-	DeletedAt *time.Time `form:"deletedAt" json:"deletedAt" gorm:"index" swaggertype:"string" example:"2021-04-12T00:39:11.652+07:00"`
+	ID              uint              `gorm:"primaryKey" json:"id" form:"id" swaggertype:"integer"`
+	Username        string            `gorm:"type:varchar(300);unique_index" form:"username" json:"username" binding:"required,max=300" swaggertype:"string" example:"rozam"`
+	Password        string            `gorm:"size:300" form:"password" json:"password,omitempty" binding:"required,min=6,max=300"`
+	Serves          []Serve           `gorm:"foreignKey:UserID"`
+	UserLoginFailed []UserLoginFailed `gorm:"foreignKey:UserID"`
+	CreatedAt       time.Time         `form:"createdAt" json:"createdAt" swaggertype:"string" example:"2021-04-12T00:39:11.652+07:00"`
+	UpdatedAt       time.Time         `form:"updatedAt" json:"updatedAt" swaggertype:"string" example:"2021-04-12T00:39:11.652+07:00"`
+	DeletedAt       *time.Time        `form:"deletedAt" json:"deletedAt" gorm:"index" swaggertype:"string" example:"2021-04-12T00:39:11.652+07:00"`
 }
 
 // BeforeUpdate : hook before a user is updated
@@ -32,6 +33,14 @@ func (u *User) BeforeSave(tx *gorm.DB) (err error) {
 
 	fmt.Println(u.Password)
 	return
+}
+
+type UserLoginFailed struct {
+	ID        uint       `gorm:"primaryKey" json:"id" form:"id" swaggertype:"integer"`
+	UserID    uint       `form:"userId" json:"userId"`
+	CreatedAt time.Time  `form:"createdAt" json:"createdAt" swaggertype:"string" example:"2021-04-12T00:39:11.652+07:00"`
+	UpdatedAt time.Time  `form:"updatedAt" json:"updatedAt" swaggertype:"string" example:"2021-04-12T00:39:11.652+07:00"`
+	DeletedAt *time.Time `form:"deletedAt" json:"deletedAt" gorm:"index" swaggertype:"string" example:"2021-04-12T00:39:11.652+07:00"`
 }
 
 type UserLogin struct {
