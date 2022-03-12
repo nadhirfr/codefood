@@ -395,7 +395,6 @@ func ServeGetByServeID(c *gin.Context) {
 }
 
 func ServeGetAll(c *gin.Context) {
-	//TODO check filter
 	var skip = c.Query("skip")
 	var limit = c.Query("limit")
 	var sort = c.Query("sort")
@@ -418,11 +417,11 @@ func ServeGetAll(c *gin.Context) {
 
 	categoryId_uint64, _ := strconv.ParseUint(categoryId, 10, 64)
 	if categoryId_uint64 > 0 {
-		query.Where("recipe_category_id", categoryId_uint64)
+		query.Where("recipes.recipe_category_id", categoryId_uint64)
 	}
 
 	if q != "" {
-		query.Where("recipe_name LIKE ?", "%"+q+"%")
+		query.Where("recipes.name LIKE ?", "%"+q+"%")
 	}
 
 	if sort != "" {
@@ -431,7 +430,7 @@ func ServeGetAll(c *gin.Context) {
 
 		if s[0] != "" {
 			if s[0] == "nserve" {
-				s[0] = "n_serving"
+				s[0] = "serves.n_serving"
 				query.Order(s[0] + " " + s[1])
 			} else {
 				s[0] = "created_at"
@@ -512,10 +511,10 @@ func ServeGetAll(c *gin.Context) {
 
 				if statusFilter != "" {
 					if statusFilter == status {
-						servesResultFiltered = append(servesResultFiltered, serveResult)
+						servesResultFiltered = append(servesResultFiltered, servesResult[idx])
 					}
 				} else {
-					servesResultFiltered = append(servesResultFiltered, serveResult)
+					servesResultFiltered = append(servesResultFiltered, servesResult[idx])
 				}
 			}
 		}
@@ -524,8 +523,8 @@ func ServeGetAll(c *gin.Context) {
 			Total   int                        `json:"total"`
 			History []models.ServeResultGetAll `json:"history"`
 		}{
-			Total:   len(servesResult),
-			History: servesResult,
+			Total:   len(servesResultFiltered),
+			History: servesResultFiltered,
 		}
 
 		c.JSON(http.StatusOK, models.ResponseResult{Success: true, Message: "Success", Data: data})
