@@ -1,0 +1,12 @@
+version: '3.4'
+
+services:
+  codefood:
+    env_file:
+      - .env
+    image: codefood
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - "3030:3030"
