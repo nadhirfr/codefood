@@ -116,6 +116,7 @@ func ServeCreate(c *gin.Context) {
 				NServing:           serve.NServing,
 				NStep:              float64(len(serveStepResults)),
 				NStepDone:          1,
+				Reaction:           serve.Reaction,
 				Steps:              serveStepResults,
 				Status:             "progress",
 				CreatedAt:          serve.CreatedAt,
@@ -285,6 +286,7 @@ func ServeEditStepByServeID(c *gin.Context) {
 						NServing:           serve.NServing,
 						NStep:              nStep,
 						NStepDone:          nStepDone,
+						Reaction:           serve.Reaction,
 						Steps:              serveStepResults,
 						Status:             status,
 						CreatedAt:          serve.CreatedAt,
@@ -390,6 +392,7 @@ func ServeGetByServeID(c *gin.Context) {
 			NServing:           serve.NServing,
 			NStep:              nStep,
 			NStepDone:          nStepDone,
+			Reaction:           serve.Reaction,
 			Steps:              serveStepResults,
 			Status:             status,
 			CreatedAt:          serve.CreatedAt,
@@ -399,16 +402,26 @@ func ServeGetByServeID(c *gin.Context) {
 }
 
 func ServeGetAll(c *gin.Context) {
+	//TODO check filter
 	var skip = c.Query("skip")
 	var limit = c.Query("limit")
 	var sort = c.Query("sort")
 	var q = c.Query("q")
+	var statusFilter = c.Query("status")
 	var categoryId = c.Query("categoryId")
 
-	var recipes []models.Recipe
-	var recipesResult []models.RecipeResultGetAll
+	var serves []models.Serve
+	var servesResult []models.ServeResultGetAll
+	var servesResultFiltered []models.ServeResultGetAll
 
-	query := helpers.DB.Model(&recipes)
+	query := helpers.DB.Model(&serves).
+		Select(
+			"serves.id as id", "serves.n_serving as n_serving", "serves.reaction as reaction", "serves.created_at as created_at", "serves.updated_at as updated_at",
+			"recipes.id as recipe_id", "recipes.name as recipe_name", "recipes.image as recipe_image", "recipes.recipe_category_id as recipe_category_id",
+			"recipe_categories.name as recipe_category_name",
+		).
+		Joins("INNER JOIN recipes ON serves.recipe_id = recipes.id").
+		Joins("INNER JOIN recipe_categories ON recipes.recipe_category_id = recipe_categories.id")
 
 	categoryId_uint64, _ := strconv.ParseUint(categoryId, 10, 64)
 	if categoryId_uint64 > 0 {
@@ -416,20 +429,26 @@ func ServeGetAll(c *gin.Context) {
 	}
 
 	if q != "" {
-		query.Where("name LIKE ?", "%"+q+"%")
+		query.Where("recipe_name LIKE ?", "%"+q+"%")
 	}
 
 	if sort != "" {
-		//name_asc|name_desc|like_desc
+		//newest|oldest|nserve_asc|nserve_desc
 		s := strings.Split(sort, "_")
 
 		if s[0] != "" {
-			if s[0] == "like" {
-				s[0] = "n_reaction_like"
+			if s[0] == "nserve" {
+				s[0] = "n_serving"
+				query.Order(s[0] + " " + s[1])
+			} else {
+				s[0] = "created_at"
+				if s[0] == "oldest" {
+					query.Order(s[0] + " desc")
+				} else {
+					query.Order(s[0] + " asc")
+				}
 			}
 		}
-
-		query.Order(s[0] + " " + s[1])
 
 	}
 
@@ -443,37 +462,77 @@ func ServeGetAll(c *gin.Context) {
 		query.Offset(int(skip_uint64))
 	}
 
-	query.Find(&recipes)
+	query.Find(&servesResult)
+
+	fmt.Println(servesResult)
 
 	if query.Error != nil {
 		c.JSON(http.StatusNotFound, models.ResponseError{Success: false, Message: "Recipe not found"})
 		return
 	} else {
-		for _, recipe := range recipes {
-			var recipeCategory models.RecipeCategory
-			recipeCategory.ID = recipe.RecipeCategoryId
-			helpers.DB.Model(&recipeCategory).Where(models.RecipeCategory{ID: recipe.RecipeCategoryId}).First(&recipeCategory)
+		for idx, serveResult := range servesResult {
+			var steps []models.ServeRecipeStep
+			var serveSteps []models.ServeStep
 
-			recipesResult = append(recipesResult, models.RecipeResultGetAll{
-				ID:               recipe.ID,
-				Name:             recipe.Name,
-				Image:            recipe.Image,
-				NReactionLike:    recipe.NReactionLike,
-				NReactionNeutral: recipe.NReactionNeutral,
-				NReactionDislike: recipe.NReactionDislike,
-				RecipeCategoryId: recipe.RecipeCategoryId,
-				CreatedAt:        recipe.CreatedAt,
-				UpdatedAt:        recipe.UpdatedAt,
-				RecipeCategory:   recipeCategory,
-			})
+			err := helpers.DB.Model(&serveSteps).
+				Select("serve_steps.*", "recipe_steps.step_order", "recipe_steps.description").
+				Joins("INNER JOIN recipe_steps ON serve_steps.recipe_step_id = recipe_steps.id").
+				Where(models.ServeStep{ServeID: serveResult.ID}).
+				Find(&steps).
+				Order("step_order asc").Error
+			if err != nil {
+				c.JSON(http.StatusNotFound, models.ResponseError{Success: false, Message: "Serve history with id " + fmt.Sprint(serveResult.ID) + " has no steps"})
+				return
+			} else {
+				var recipe = models.Recipe{
+					ID: serveResult.RecipeID,
+				}
+
+				if err := helpers.DB.Model(recipe).Where("ID = ?", serveResult.RecipeID).First(&recipe).Error; err != nil {
+					c.JSON(http.StatusNotFound, models.ResponseError{Success: false, Message: "Recipe with id " + fmt.Sprint(serveResult.RecipeID) + " not found"})
+					return
+				}
+
+				var nStep = len(steps)
+				var nStepDone = 0
+
+				for _, val := range steps {
+					if val.Done {
+						nStepDone++
+					}
+				}
+
+				status := ""
+				if nStepDone >= nStep {
+					if serveResult.Reaction == models.ReactionUnknown {
+						status = "need-rating"
+					} else {
+						status = "done"
+					}
+				} else {
+					status = "progress"
+				}
+
+				servesResult[idx].NStep = float64(nStep)
+				servesResult[idx].NStepDone = float64(nStepDone)
+				servesResult[idx].Status = status
+
+				if statusFilter != "" {
+					if statusFilter == status {
+						servesResultFiltered = append(servesResultFiltered, serveResult)
+					}
+				} else {
+					servesResultFiltered = append(servesResultFiltered, serveResult)
+				}
+			}
 		}
 
 		data := struct {
-			Total   int                         `json:"total"`
-			Recipes []models.RecipeResultGetAll `json:"recipes"`
+			Total   int                        `json:"total"`
+			History []models.ServeResultGetAll `json:"history"`
 		}{
-			Total:   len(recipesResult),
-			Recipes: recipesResult,
+			Total:   len(servesResult),
+			History: servesResult,
 		}
 
 		c.JSON(http.StatusOK, models.ResponseResult{Success: true, Message: "Success", Data: data})

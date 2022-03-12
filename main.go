@@ -65,6 +65,6 @@ func main() {
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	//running
-	r.Run("127.0.0.1:3030")
+	r.Run("0.0.0.0:3030")
 
 }

@@ -97,7 +97,7 @@ type ServeResultGetAll struct {
 	NServing           float64   `form:"nServing" json:"nServing" binding:"required"`
 	NStep              float64   `form:"nStep" json:"nStep" binding:"required"`
 	NStepDone          float64   `form:"nStepDone" json:"nStepDone" binding:"required"`
-	Reaction           *string   `form:"reaction" json:"reaction" `
+	Reaction           Reaction  `form:"reaction" json:"reaction" `
 	Status             string    `form:"status" json:"status" `
 	CreatedAt          time.Time `form:"createdAt" json:"createdAt" swaggertype:"string" example:"2021-04-12T00:39:11.652+07:00"`
 	UpdatedAt          time.Time `form:"updatedAt" json:"updatedAt" swaggertype:"string" example:"2021-04-12T00:39:11.652+07:00"`
@@ -114,7 +114,7 @@ type ServeResult201 struct {
 	NStep              float64           `form:"nStep" json:"nStep" binding:"required"`
 	NStepDone          float64           `form:"nStepDone" json:"nStepDone" binding:"required"`
 	Steps              []ServeStepResult `form:"steps" json:"steps" binding:"required"`
-	Reaction           *string           `form:"reaction" json:"reaction" `
+	Reaction           Reaction          `form:"reaction" json:"reaction" `
 	Status             string            `form:"status" json:"status" `
 	CreatedAt          time.Time         `form:"createdAt" json:"createdAt" swaggertype:"string" example:"2021-04-12T00:39:11.652+07:00"`
 	UpdatedAt          time.Time         `form:"updatedAt" json:"updatedAt" swaggertype:"string" example:"2021-04-12T00:39:11.652+07:00"`
