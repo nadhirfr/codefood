@@ -61,7 +61,7 @@ func ServeCreate(c *gin.Context) {
 	}
 
 	var serve = models.Serve{
-		NServing: serveRegister.NServing,
+		NServing: *serveRegister.NServing,
 		UserID:   uint(tokenAuth.UserId),
 		RecipeID: serveRegister.RecipeID,
 	}

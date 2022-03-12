@@ -47,8 +47,8 @@ func GetReactionId(val string) Reaction {
 }
 
 type ServeCreate struct {
-	RecipeID uint    `form:"recipeId" json:"recipeId" binding:"required"`
-	NServing float64 `form:"nServing" json:"nServing" binding:"required,min=1"`
+	RecipeID uint     `form:"recipeId" json:"recipeId" binding:"required"`
+	NServing *float64 `form:"nServing" json:"nServing,omitempty" binding:"required,min=1"`
 }
 
 type ServeUpdateStep struct {
